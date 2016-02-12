@@ -10,7 +10,7 @@ import datetime
 
 domain = "http://www.sf.se"
 base = "%(domain)s/?city=malmo" % {"domain": domain}
-movieurl = "%(domain)s/UserControls/Booking/SelectShow/ShowList.control?MoviePageId=%(movie)s&SelectedDate=%(date)s&CityId=%(city)sTheatreId=%(cinema)s"
+movieurl = "%(domain)s/UserControls/Booking/SelectShow/ShowList.control?MoviePageId=%(movie)s&SelectedDate=%(date)s&CityId=%(city)s"
 
 def fetch_base():
     url = base
@@ -54,7 +54,7 @@ def get_city(soup):
     return city["value"]
 
 def get_schedule(date, city, movie):
-    vals = {"domain": domain, "date": date, "city": city, "cinema": cinema, "movie": movie}
+    vals = {"domain": domain, "date": date, "city": city, "movie": movie}
     url = movieurl % vals
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'html.parser')
@@ -72,12 +72,9 @@ def main():
         cinemas = get_cinemas(soup)
         movies = get_movies(soup)
         date = datetime.datetime.now().strftime("%Y%d%m")
-        """
         schedules = []
-        for cinema in cinemas:
-            for movie in movies:
-                schedule = get_schedule(date, city, cinema, movie)
-        """
+        for movie in movies:
+            schedule = get_schedule(date, city, movie)
 
     except requests.ConnectionError:
         sys.stderr.write("No connection")
