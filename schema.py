@@ -121,6 +121,7 @@ def main():
         out = u"\n".join(formatted).encode("utf-8")
         with open(outfile, 'w') as f:
             f.write("<html><head><title>SF improved</title><meta charset=\"UTF-8\"></head><body>\n")
+            f.write("<h1>%s</h1>\n" % datetime.datetime.now().strftime("%Y-%m-%d"))
             f.write("<table><tr><th>time</th><th>title</th><th>cinema</th><th>info</th><th>buy</th></tr>\n")
             f.write(out)
             f.write("\n</table></body></html>")
