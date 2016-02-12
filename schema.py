@@ -83,13 +83,13 @@ def get_schedule(date, city, movie, title):
         for showing in soup.select(".selectShowRow"):
             schedule = {
                 "title": title,
-                "time": soup.select(".cmil_time")[0].get_text(),
+                "time": showing.select(".cmil_time")[0].get_text(),
                 "cinema": cinema,
                 "salon": salon,
-                "link": soup.select(".cmil_btn a")[0]["href"],
+                "link": showing.select(".cmil_btn a")[0]["href"],
                 "info": []
                 }
-            infos = soup.select(".cmil_versions div")
+            infos = showing.select(".cmil_versions div")
             for info in infos:
                 schedule["info"] + info["class"]
             schedule["info"] = [infomap[info] for info in schedule["info"] if info in infomap]
