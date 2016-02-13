@@ -12,6 +12,7 @@ import time
 domain = "http://www.sf.se"
 base = "%(domain)s/?city=malmo" % {"domain": domain}
 movieurl = "%(domain)s/UserControls/Booking/SelectShow/ShowList.control?MoviePageId=%(movie)s&SelectedDate=%(date)s&CityId=%(city)s"
+imdburl = "http://www.imdb.com/find?q=%(title)s"
 
 def fetch_base():
     url = base
@@ -28,7 +29,6 @@ def get_cinemas(soup):
         if match:
             id = match.group(1)
             ret[id] = cinema.get_text()
-            #print id, "->", ret[id]
         else:
             print "no match on", str(cinema)
     return ret
@@ -43,14 +43,12 @@ def get_movies(soup):
         if match:
             id = match.group(1)
             ret[id] = movie.get_text()
-            #print id, "->", ret[id]
         else:
             print "no match on", str(movie)
     return ret
 
 def get_city(soup):
     city = soup.find(id="CurrentPageMetaData").select("input[id=CityId]")[0]
-    #print "city", "->", city["value"]
     return city["value"]
 
 infomap = {"mv_txt": "TXT", "mv_sv": "SV", "mv_notxt": "NOTXT", "mv_3d": "3D"}
@@ -80,6 +78,7 @@ def get_schedule(date, city, movie, title):
         cinema = soup.select(".cmil_theatre")[0].get_text()
         salon = soup.select(".cmil_salong")[0].get_text()
 
+        # split on each showing at the current cinema
         for showing in soup.select(".selectShowRow"):
             schedule = {
                 "title": title,
@@ -91,11 +90,12 @@ def get_schedule(date, city, movie, title):
                 }
             infos = showing.select(".cmil_versions div")
             for info in infos:
-                schedule["info"] + info["class"]
+                schedule["info"] = schedule["info"] + info["class"]
             schedule["info"] = [infomap[info] for info in schedule["info"] if info in infomap]
             schedule["info"] = " ".join(schedule["info"])
             if schedule["time"]:
                 schedule["datetime"] = time.strptime(schedule["time"], "%H:%M")
+            schedule["imdb"] = imdburl % schedule
             showings.append(schedule)
     return showings
 
@@ -117,15 +117,18 @@ def main():
             schedules = schedules + get_schedule(date, city, id, title)
         schedules.sort(key=lambda x: x["datetime"])
 
-        formatted = [u"<tr><td>%(time)s</td><td>%(title)s</td><td>%(cinema)s (%(salon)s)</td><td>%(info)s</td><td><a href=\"%(link)s\">buy</a></td></tr>" % s for s in schedules]
+        formatted = [u"<tr><td>%(time)s</td><td>%(title)s</td><td>%(cinema)s (%(salon)s)</td><td>%(info)s</td><td><a href=\"%(link)s\">buy</a></td><td><a href=\"%(imdb)s\">imdb</a></tr>" % s for s in schedules]
         out = u"\n".join(formatted).encode("utf-8")
         with open(outfile, 'w') as f:
-            f.write("<html><head><title>SF improved</title><meta charset=\"UTF-8\"></head><body>\n")
-            f.write("<h1>%s</h1>\n" % datetime.datetime.now().strftime("%Y-%m-%d"))
-            f.write("<table><tr><th>time</th><th>title</th><th>cinema</th><th>info</th><th>buy</th></tr>\n")
+            f.write("<html>\n<head>\n<title>SF improved</title>\n<meta charset=\"UTF-8\">\n")
+            f.write("<style type=\"text/css\">\n")
+            f.write("th { text-align: left }\ntd { padding-right: 20px }\n")
+            f.write("</style>")
+            f.write("</head>\n<body>\n")
+            f.write("<h1>SF Bio: %s</h1>\n" % datetime.datetime.now().strftime("%Y-%m-%d"))
+            f.write("<table><tr><th>time</th><th>title</th><th>cinema</th><th>info</th><th>buy</th><th>description</th></tr>\n")
             f.write(out)
             f.write("\n</table></body></html>")
-
     except requests.ConnectionError:
         sys.stderr.write("No connection")
         sys.exit(1)
