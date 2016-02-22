@@ -110,25 +110,49 @@ def main():
         city = get_city(soup)
         cinemas = get_cinemas(soup)
         movies = get_movies(soup)
-        date = datetime.datetime.now().strftime("%Y%m%d")
+        days = 2
 
-        schedules = []
-        for id,title in movies.items():
-            schedules = schedules + get_schedule(date, city, id, title)
-        schedules.sort(key=lambda x: x["datetime"])
+        top = """
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <title>SF improved</title>
+                <meta charset=\"UTF-8\">
+                <style type=\"text/css\">
+                    th { text-align: left }
+                    td { padding-right: 20px }
+            </style>
+            </head>
+            <body>
+            <h1>SF Bio</h1>
+            """
+        bottom = "</body></html>"
+        tableheader = "<table><tr><th>time</th><th>title</th><th>cinema</th><th>info</th><th>buy</th><th>description</th></tr>"
+        tablefooter = "</table>"
 
-        formatted = [u"<tr><td>%(time)s</td><td>%(title)s</td><td>%(cinema)s (%(salon)s)</td><td>%(info)s</td><td><a href=\"%(link)s\">buy</a></td><td><a href=\"%(imdb)s\">imdb</a></tr>" % s for s in schedules]
-        out = u"\n".join(formatted).encode("utf-8")
+        out =[]
+        for day in range(days):
+            date = (datetime.datetime.now() + datetime.timedelta(days=day)).strftime("%Y%m%d")
+            schedules = []
+            for id,title in movies.items():
+                schedules = schedules + get_schedule(date, city, id, title)
+            schedules.sort(key=lambda x: x["datetime"])
+
+            datestr = datetime.datetime.now().strftime("%Y-%m-%d")
+            if day == 0:
+                datestr = datestr + " (today)"
+            elif day == 1:
+                datestr = datestr + " (tomorrow)"
+            out.append("<h2>%s</h2>" % datestr)
+            out.append(tableheader)
+            formatted = [u"<tr><td>%(time)s</td><td>%(title)s</td><td>%(cinema)s (%(salon)s)</td><td>%(info)s</td><td><a href=\"%(link)s\">buy</a></td><td><a href=\"%(imdb)s\">imdb</a></tr>" % s for s in schedules]
+            out.append(u"\n".join(formatted))
+            out.append(tablefooter)
+
         with open(outfile, 'w') as f:
-            f.write("<html>\n<head>\n<title>SF improved</title>\n<meta charset=\"UTF-8\">\n")
-            f.write("<style type=\"text/css\">\n")
-            f.write("th { text-align: left }\ntd { padding-right: 20px }\n")
-            f.write("</style>")
-            f.write("</head>\n<body>\n")
-            f.write("<h1>SF Bio: %s</h1>\n" % datetime.datetime.now().strftime("%Y-%m-%d"))
-            f.write("<table><tr><th>time</th><th>title</th><th>cinema</th><th>info</th><th>buy</th><th>description</th></tr>\n")
-            f.write(out)
-            f.write("\n</table></body></html>")
+            f.write(top)
+            f.write(u"\n".join(out).encode("utf-8"))
+            f.write(bottom)
     except requests.ConnectionError:
         sys.stderr.write("No connection")
         sys.exit(1)
