@@ -132,13 +132,13 @@ def main():
 
         out =[]
         for day in range(days):
-            date = (datetime.datetime.now() + datetime.timedelta(days=day)).strftime("%Y%m%d")
+            date = datetime.datetime.now() + datetime.timedelta(days=day)
             schedules = []
             for id,title in movies.items():
-                schedules = schedules + get_schedule(date, city, id, title)
+                schedules = schedules + get_schedule(date.strftime("%Y%m%d"), city, id, title)
             schedules.sort(key=lambda x: x["datetime"])
 
-            datestr = datetime.datetime.now().strftime("%Y-%m-%d")
+            datestr = date.strftime("%Y-%m-%d")
             if day == 0:
                 datestr = datestr + " (today)"
             elif day == 1:
