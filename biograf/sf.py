@@ -3,19 +3,34 @@
 
 import requests
 from bs4 import BeautifulSoup
-import os
-import sys
 import re
-import datetime
 import time
+import datetime
 
 domain = "http://www.sf.se"
-base = "%(domain)s/?city=malmo" % {"domain": domain}
 movieurl = "%(domain)s/UserControls/Booking/SelectShow/ShowList.control?MoviePageId=%(movie)s&SelectedDate=%(date)s&CityId=%(city)s"
 imdburl = "http://www.imdb.com/find?q=%(title)s"
 
-def fetch_base():
-    url = base
+def get_schedule(city, days):
+    """
+    returns a list of schedules indexed by days-from-now. today=0, tomorrow=1, etc
+    """
+    soup = fetch_base(city)
+    city = get_city(soup)
+    cinemas = get_cinemas(soup)
+    movies = get_movies(soup)
+
+    schedule = []
+    for day in range(days):
+        date = datetime.datetime.now() + datetime.timedelta(days=day)
+        schedules = []
+        for id,title in movies.items():
+            schedules = schedules + fetch_schedule(date.strftime("%Y%m%d"), city, id, title)
+        schedule.append(schedules)
+    return schedule
+
+def fetch_base(city):
+    url = "%(domain)s/?city=%(city)s" % {"domain": domain, "city": city}
     r = requests.get(url)
     return BeautifulSoup(r.text, 'html.parser')
 
@@ -48,11 +63,10 @@ def get_movies(soup):
     return ret
 
 def get_city(soup):
-    city = soup.find(id="CurrentPageMetaData").select("input[id=CityId]")[0]
-    return city["value"]
+    return soup.find(id="CurrentPageMetaData").select("input[id=CityId]")[0]["value"] # e.g. "ma" for malmö
 
 infomap = {"mv_txt": "TXT", "mv_sv": "SV", "mv_notxt": "NOTXT", "mv_3d": "3D"}
-def get_schedule(date, city, movie, title):
+def fetch_schedule(date, city, movie, title):
     vals = {"domain": domain, "date": date, "city": city, "movie": movie}
     url = movieurl % vals
     r = requests.get(url)
@@ -99,63 +113,3 @@ def get_schedule(date, city, movie, title):
             showings.append(schedule)
     return showings
 
-def main():
-    if len(sys.argv) < 2:
-        sys.stderr.write("usage: %s [outfile]" % sys.argv[0])
-        sys.exit(1)
-
-    outfile = sys.argv[1]
-    try:
-        soup = fetch_base()
-        city = get_city(soup)
-        cinemas = get_cinemas(soup)
-        movies = get_movies(soup)
-        days = 2
-
-        top = """
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <title>SF improved</title>
-                <meta charset=\"UTF-8\">
-                <style type=\"text/css\">
-                    th { text-align: left }
-                    td { padding-right: 20px }
-            </style>
-            </head>
-            <body>
-            <h1>SF Bio</h1>
-            """
-        bottom = "</body></html>"
-        tableheader = "<table><tr><th>time</th><th>title</th><th>cinema</th><th>info</th><th>buy</th><th>description</th></tr>"
-        tablefooter = "</table>"
-
-        out =[]
-        for day in range(days):
-            date = datetime.datetime.now() + datetime.timedelta(days=day)
-            schedules = []
-            for id,title in movies.items():
-                schedules = schedules + get_schedule(date.strftime("%Y%m%d"), city, id, title)
-            schedules.sort(key=lambda x: x["datetime"])
-
-            datestr = date.strftime("%Y-%m-%d")
-            if day == 0:
-                datestr = datestr + " (today)"
-            elif day == 1:
-                datestr = datestr + " (tomorrow)"
-            out.append("<h2>%s</h2>" % datestr)
-            out.append(tableheader)
-            formatted = [u"<tr><td>%(time)s</td><td>%(title)s</td><td>%(cinema)s (%(salon)s)</td><td>%(info)s</td><td><a href=\"%(link)s\">buy</a></td><td><a href=\"%(imdb)s\">imdb</a></tr>" % s for s in schedules]
-            out.append(u"\n".join(formatted))
-            out.append(tablefooter)
-
-        with open(outfile, 'w') as f:
-            f.write(top)
-            f.write(u"\n".join(out).encode("utf-8"))
-            f.write(bottom)
-    except requests.ConnectionError:
-        sys.stderr.write("No connection")
-        sys.exit(1)
-
-if __name__ == '__main__':
-    main()
