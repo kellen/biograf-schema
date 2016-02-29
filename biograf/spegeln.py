@@ -7,6 +7,7 @@ import re
 import time
 import sys
 import datetime
+import re
 
 from biograf.nutid import get_nutid_schedule
 
@@ -16,4 +17,11 @@ def get_schedule(city, days):
     """
     if city != "malmo":
         return [[] for day in range(days)]
-    return get_nutid_schedule(days, "https://bokabiospegeln.com", "Spegeln")
+    schedules = get_nutid_schedule(days, "https://bokabiospegeln.com", "Spegeln")
+    patt = re.compile("^((SALONG BAR DECO|NT|KONSERT|TEATER|CINEMATEKET): )", re.IGNORECASE)
+    for schedule in schedules:
+        for s in schedule:
+            match = patt.match(s["title"])
+            if match:
+                s["title"] = s["title"][match.group(1):]
+    return schedules
