@@ -10,10 +10,16 @@ import datetime
 
 from biograf.nutid import get_nutid_schedule
 
+sv = " (Sv. txt)"
 def get_schedule(city, days):
     """
     returns a list of schedules indexed by days-from-now. today=0, tomorrow=1, etc
     """
     if city != "malmo":
         return [[] for day in range(days)]
-    return get_nutid_schedule(days, "http://217.115.59.98", "Panora")
+    schedules = get_nutid_schedule(days, "http://217.115.59.98", "Panora")
+    for s in schedules:
+        if sv in s["title"]:
+            s["info"] = "TXT"
+            s["title"] = s["title"].replace(sv, "")
+    return schedules
