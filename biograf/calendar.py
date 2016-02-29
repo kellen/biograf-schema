@@ -37,7 +37,7 @@ def main():
             <!DOCTYPE html>
             <html>
               <head>
-                <title>biografkalendar</title>
+                <title>biografkalender</title>
                 <meta charset=\"UTF-8\">
                 <style type=\"text/css\">
                     th { text-align: left }
@@ -45,7 +45,7 @@ def main():
             </style>
             </head>
             <body>
-            <h1>biografkalendar</h1>
+            <h1>biografkalender</h1>
             """
         bottom = "</body></html>"
         tableheader = "<table>"
