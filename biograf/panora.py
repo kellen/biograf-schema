@@ -18,8 +18,9 @@ def get_schedule(city, days):
     if city != "malmo":
         return [[] for day in range(days)]
     schedules = get_nutid_schedule(days, "http://217.115.59.98", "Panora")
-    for s in schedules:
-        if sv in s["title"]:
-            s["info"] = "TXT"
-            s["title"] = s["title"].replace(sv, "")
+    for schedule in schedules:
+        for s in schedule:
+            if sv in s["title"]:
+                s["info"] = "TXT"
+                s["title"] = s["title"].replace(sv, "")
     return schedules
