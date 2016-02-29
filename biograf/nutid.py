@@ -8,7 +8,7 @@ import time
 import sys
 import datetime
 
-def get_nutid_schedule(days, domain):
+def get_nutid_schedule(days, domain, cinema):
     """
     Panora/Spegeln use "Nutid AB" software.
     returns a list of schedules indexed by days-from-now. today=0, tomorrow=1, etc
@@ -35,7 +35,7 @@ def get_nutid_schedule(days, domain):
                 schedule = {
                     "title": movie,
                     "time": showing["Tid"],
-                    "cinema": "Spegeln",
+                    "cinema": cinema,
                     "salon": showing["SalongNr"],
                     "info": "",
                     "date": showdate

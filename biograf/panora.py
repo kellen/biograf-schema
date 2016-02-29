@@ -16,4 +16,4 @@ def get_schedule(city, days):
     """
     if city != "malmo":
         return [[] for day in range(days)]
-    return get_nutid_schedule(days, "https://217.115.59.98")
+    return get_nutid_schedule(days, "http://217.115.59.98", "Panora")
