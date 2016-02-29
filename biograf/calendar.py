@@ -50,7 +50,7 @@ def main():
         bottom = "</body></html>"
         tableheader = "<table>"
         tablefooter = "</table>"
-        colheader = "<tr><th>time</th><th>title</th><th>cinema</th><th>salon</th><th>info</th><th>buy</th><th>description</th></tr>"
+        colheader = """<tr style="background-color: #CCCCCC"><th>time</th><th>title</th><th>cinema</th><th>salon</th><th>info</th><th>buy</th><th>description</th></tr>"""
 
         out =[]
         out.append(tableheader)
@@ -67,7 +67,7 @@ def main():
 
             out.append("""<tr><th colspan="7" style="background-color: black; color: white"><b>%s</b></th></tr>""" % datestr)
             out.append(colheader)
-            formatted = [u"<tr style=\"background-color: #CCCCCC\"><td>%(time)s</td><td>%(title)s</td><td>%(cinema)s</td><td>%(salon)s</td><td>%(info)s</td><td><a href=\"%(link)s\">buy</a></td><td><a href=\"%(imdb)s\">imdb</a></tr>" % s for s in schedule]
+            formatted = [u"<tr><td>%(time)s</td><td>%(title)s</td><td>%(cinema)s</td><td>%(salon)s</td><td>%(info)s</td><td><a href=\"%(link)s\">buy</a></td><td><a href=\"%(imdb)s\">imdb</a></tr>" % s for s in schedule]
             out.append(u"\n".join(formatted))
         out.append(tablefooter)
 
