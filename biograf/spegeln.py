@@ -23,5 +23,5 @@ def get_schedule(city, days):
         for s in schedule:
             match = patt.match(s["title"])
             if match:
-                s["title"] = s["title"][match.group(1):]
+                s["title"] = s["title"][match.end(1):]
     return schedules
