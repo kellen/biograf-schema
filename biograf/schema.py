@@ -37,7 +37,7 @@ def main():
             <!DOCTYPE html>
             <html>
               <head>
-                <title>SF improved</title>
+                <title>biografkalendar</title>
                 <meta charset=\"UTF-8\">
                 <style type=\"text/css\">
                     th { text-align: left }
@@ -45,28 +45,31 @@ def main():
             </style>
             </head>
             <body>
-            <h1>SF Bio</h1>
+            <h1>biografkalendar</h1>
             """
         bottom = "</body></html>"
-        tableheader = "<table><tr><th>time</th><th>title</th><th>cinema</th><th>salon</th><th>info</th><th>buy</th><th>description</th></tr>"
+        tableheader = "<table>"
         tablefooter = "</table>"
+        colheader = "<tr><th>time</th><th>title</th><th>cinema</th><th>salon</th><th>info</th><th>buy</th><th>description</th></tr>"
 
         out =[]
+        out.append(tableheader)
         for day in range(days):
-            date = datetime.datetime.now() + datetime.timedelta(days=day)
             schedule = schedules[day]
             schedule.sort(key=lambda x: x["datetime"])
 
+            date = datetime.datetime.now() + datetime.timedelta(days=day)
             datestr = date.strftime("%Y-%m-%d")
             if day == 0:
                 datestr = datestr + " (today)"
             elif day == 1:
                 datestr = datestr + " (tomorrow)"
-            out.append("<h2>%s</h2>" % datestr)
-            out.append(tableheader)
-            formatted = [u"<tr><td>%(time)s</td><td>%(title)s</td><td>%(cinema)s</td><td>%(salon)s</td><td>%(info)s</td><td><a href=\"%(link)s\">buy</a></td><td><a href=\"%(imdb)s\">imdb</a></tr>" % s for s in schedule]
+
+            out.append("""<tr><th colspan="7" style="background-color: black; color: white"><b>%s</b></th></tr>""" % datestr)
+            out.append(colheader)
+            formatted = [u"<tr style=\"background-color: #CCCCCC\"><td>%(time)s</td><td>%(title)s</td><td>%(cinema)s</td><td>%(salon)s</td><td>%(info)s</td><td><a href=\"%(link)s\">buy</a></td><td><a href=\"%(imdb)s\">imdb</a></tr>" % s for s in schedule]
             out.append(u"\n".join(formatted))
-            out.append(tablefooter)
+        out.append(tablefooter)
 
         with open(outfile, 'w') as f:
             f.write(top)
